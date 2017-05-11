@@ -49,16 +49,16 @@ callstatsConn.initialize(AppId, AppSecret, localUUID);
       var usage = callstatsConn.fabricUsage.multiplex;
       callstatsConn.addNewFabric(pc, uuid, usage, session.id, function(err, msg) { console.log("Monitoring status: " + err + " msg: " + msg); } );
 
-	    // var origGetStats = pc.getStats.bind(pc);
-	    // pc.getStats = function(f) {
-	    // 	var wrapper = function(res) {
-      //     currentUUID = uuid;
-			//     if (f) {
-	    // 		  return f(res)
-			//     };
-	    // 	};
-	    // 	return origGetStats(wrapper);
-	    // };
+      var origGetStats = pc.getStats.bind(pc);
+      pc.getStats = function(success, failure) {
+        var successWrapper = function(res) {
+          currentUUID = uuid;
+          if (success) {
+            return success(res);
+          };
+        };
+        return origGetStats(success, failure);
+      };
 
       var origCreateOffer = pc.createOffer.bind(pc);
       pc.createOffer = function(success, failure, constraints) {
