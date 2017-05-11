@@ -49,16 +49,16 @@ callstatsConn.initialize(AppId, AppSecret, localUUID);
       var usage = callstatsConn.fabricUsage.multiplex;
       callstatsConn.addNewFabric(pc, uuid, usage, session.id, function(err, msg) { console.log("Monitoring status: " + err + " msg: " + msg); } );
 
-	    var origGetStats = pc.getStats.bind(pc);
-	    pc.getStats = function(f) {
-	    	var wrapper = function(res) {
-          currentUUID = uuid;
-			    if (f) {
-	    		  return f(res)
-			    };
-	    	};
-	    	return origGetStats(wrapper);
-	    };
+	    // var origGetStats = pc.getStats.bind(pc);
+	    // pc.getStats = function(f) {
+	    // 	var wrapper = function(res) {
+      //     currentUUID = uuid;
+			//     if (f) {
+	    // 		  return f(res)
+			//     };
+	    // 	};
+	    // 	return origGetStats(wrapper);
+	    // };
 
       var origCreateOffer = pc.createOffer.bind(pc);
       pc.createOffer = function(success, failure, constraints) {
@@ -87,14 +87,14 @@ callstatsConn.initialize(AppId, AppSecret, localUUID);
         return origSetLocalDescription(sdp, success, errWrapper);
       };
 
-      var origSetRemoteDescription = pc.setRemoteDescription.bind(pc);
-      pc.setRemoteDescription = function(sdp, success, failure) {
-        var errWrapper = function(err) {
-          callstatsConn.reportError(pc, session_id, callstatsConn.webRTCFunctions.setRemoteDescription, err);
-          return failure(err);
-        }
-        return origSetRemoteDescription(sdp, success, errWrapper);
-      };
+      // var origSetRemoteDescription = pc.setRemoteDescription.bind(pc);
+      // pc.setRemoteDescription = function(sdp, success, failure) {
+      //   var errWrapper = function(err) {
+      //     callstatsConn.reportError(pc, session_id, callstatsConn.webRTCFunctions.setRemoteDescription, err);
+      //     return failure(err);
+      //   }
+      //   return origSetRemoteDescription(sdp, success, errWrapper);
+      // };
 
       var origAddIceCandidate = pc.addIceCandidate.bind(pc);
       pc.addIceCandidate = function(candidate, success, failure) {
