@@ -1,8 +1,15 @@
 var connectionsDict = {};
 var currentUUID = null;
+var localUUID = null;
 
-var callstatsConn = new callstats();
-callstatsConn.initialize(AppId, AppSecret, localUserId);
+function queryParams() {
+  var m = {};
+  for (let p of window.location.search.substring(1).split("&")) {
+    p = p.split("=");
+    m[p[0]] = p[1]
+  }
+  return m
+}
 
 if (typeof(generateUUID) != "function") {
   function generateUUID() {
@@ -15,12 +22,28 @@ if (typeof(generateUUID) != "function") {
   };
 }
 
+if (queryParams().from) {
+  localUUID = queryParams().from;
+} else {
+  localUUID = generateUUID();
+}
+
+var callstatsConn = new callstats();
+callstatsConn.initialize(AppId, AppSecret, localUUID);
+
 (function() {
   var origPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
   if (origPeerConnection) {
     var newPeerConnection = function(config, constraints) {
 	    var pc = new origPeerConnection(config, constraints);
-      var uuid = generateUUID();
+
+      var uuid = null;
+      if (queryParams().to) {
+        uuid = queryParams().to;
+      } else {
+        uuid = generateUUID();
+      }
+
       connectionsDict[uuid] = { 'peerConnection': pc, 'kind': config.capableSimulcastStreams ? 'publisher' : 'subscriber' };
 
       var usage = callstatsConn.fabricUsage.multiplex;
