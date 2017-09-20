@@ -1,0 +1,35 @@
+{
+  "name": "callstats-opentok-shim",
+  "version": "1.0.0",
+  "description": "CallStats support for OpenTok",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WebRTCventures/callstats-tokbox-shim.git"
+  },
+  "keywords": [
+    "tokbox",
+    "opentok",
+    "callstats",
+    "webrtc",
+    "shim"
+  ],
+  "author": "Rafael Viscarra",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/WebRTCventures/callstats-tokbox-shim/issues"
+  },
+  "homepage": "https://github.com/WebRTCventures/callstats-tokbox-shim#readme",
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-preset-env": "^1.6.0",
+    "grunt": "^1.0.1",
+    "grunt-babel": "^7.0.0",
+    "grunt-contrib-copy": "^1.0.0",
+    "grunt-contrib-uglify": "^3.1.0"
+  },
+  "dependencies": {}
+}

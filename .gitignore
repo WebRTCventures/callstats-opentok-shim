@@ -1,0 +1,3 @@
+node_modules
+dist/*-es5.js
+dist/*-es5.js.map
