@@ -63,12 +63,14 @@ let CallstatsOpenTok = (function() {
     }
     callstatsConn = new callstats();
     callstatsConn.initialize(params.AppId, params.AppSecret, connId);
+
+    return callstatsConn;
   }
 
   let origPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
   if (origPeerConnection) {
     let newPeerConnection = function(config, constraints) {
-	    let pc = new origPeerConnection(config, constraints);
+      let pc = new origPeerConnection(config, constraints);
       let uuid = idGenerator();
       let kind;
       if(config === undefined) {
