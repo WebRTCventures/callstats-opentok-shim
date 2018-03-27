@@ -14,7 +14,7 @@ Just include the `dist/callstats-opentok-shim.min.js` file in your page after th
 And initialize it like shown below:
 
 ```javascript
-CallstatsOpenTok.initialize(opts);
+var connection = CallstatsOpenTok.initialize(opts);
 ```
 
 Supported options:
@@ -29,12 +29,15 @@ Supported options:
 #### Example
 
 ```javascript
-CallstatsOpenTok.initialize({
+var connection = CallstatsOpenTok.initialize({
   AppId: 834738451,
   AppSecret: 'sOTjsJEfwPUGW4SRJI4BhbprGJ3lfO6Kp+:ixCX1P9mzNThlsW+YNLlb=',
   SessionId: '1_eiTh54cMjNx4FNk-JkT15IXNTGtNnh8W03m0RwYTMxUMNMDyhU2gzMxezMXjaF0Mj0E-UH4'
 });
 ```
+
+The `initialize` function returns a `connection` Object of which you can make use of in various ways to extract
+criteria to which the stream is being evaluated against.
 
 ### Building the project
 
