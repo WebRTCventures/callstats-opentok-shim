@@ -85,7 +85,7 @@ let CallstatsOpenTok = (function() {
       
       if(callstatsConn !== null) {
         let usage = callstatsConn.fabricUsage.multiplex;
-        callstatsConn.addNewFabric(pc, uuid, usage, session.id, (err, msg) => {
+        callstatsConn.addNewFabric(pc, uuid, usage, sessionId, (err, msg) => {
           console.log("Monitoring status: " + err + " msg: " + msg);
         });
       } else {
