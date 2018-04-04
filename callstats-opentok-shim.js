@@ -34,6 +34,10 @@ let CallstatsOpenTok = (function() {
 
   function initialize(params) {
     let connId = null;
+    let statsCallback = null;
+    let initCallback = null;
+    let configParams = null;
+
     if(typeof(params.IdGenerator) === 'function') {
       idGenerator = params.IdGenerator;
     }
@@ -61,8 +65,20 @@ let CallstatsOpenTok = (function() {
       console.info('Stats identifier not provided. Generating one ...');
       connId = idGenerator();
     }
+
+    if (params.InitCallback) {
+      initCallback = params.InitCallback;
+    }
+
+    if (params.StatsCallback) {
+      statsCallback = params.StatsCallback;
+    }
+
+    if (params.ConfigParams) {
+      configParams = params.ConfigParams;
+    }
     callstatsConn = new callstats();
-    callstatsConn.initialize(params.AppId, params.AppSecret, connId);
+    callstatsConn.initialize(params.AppId, params.AppSecret, connId, initCallback, statsCallback, configParams);
 
     return callstatsConn;
   }
@@ -79,10 +95,10 @@ let CallstatsOpenTok = (function() {
         kind = config.capableSimulcastStreams ? 'publisher' : 'subscriber'
       }
       connections.set(uuid, {
-        peerConnection: pc, 
+        peerConnection: pc,
         kind
       });
-      
+
       if(callstatsConn !== null) {
         let usage = callstatsConn.fabricUsage.multiplex;
         callstatsConn.addNewFabric(pc, uuid, usage, sessionId, (err, msg) => {

@@ -19,12 +19,15 @@ var connection = CallstatsOpenTok.initialize(opts);
 
 Supported options:
 
-| Param. Name    | Required | Description                                                    | 
+| Param. Name    | Required | Description                                                    |
 | -------------- |  :----:  | -------------------------------------------------------------- |
 | `AppId`        | Yes      | Callstats AppId                                                |
 | `AppSecret`    | Yes      | Callstats AppSecret                                            |
-| `SessionId`    | Yes      | TokBox's Session Identifier                                    | 
+| `SessionId`    | Yes      | TokBox's Session Identifier                                    |
 | `Id`           | No       | Current conn. identifier, if not provided a uuid4 is generated |
+| `InitCallback` | No       | Callstats csInitCallback                                       |
+| `StatsCallback`| No       | Callstats csStatsCallback                                      |
+| `ConfigParams` | No       | Callstats configParams                                         |
 
 #### Example
 
@@ -43,5 +46,5 @@ criteria to which the stream is being evaluated against.
 
 Building is not required to use the shim, since there's a production ready version and it respective sourcemap in the `dist` directory, however, building the shim is fairly simple
 
-After installing dependencies with `npm install`, run `grunt` in the project directory. 
+After installing dependencies with `npm install`, run `grunt` in the project directory.
 This will generate new files in the `dist` directory.
