@@ -14,12 +14,16 @@ let CallstatsOpenTok = (function() {
     return uuid;
   };
 
+  function reportError(pc, fnName) {
+    if (callstatsConn !== null) {
+      const webRtcFunc = callstatsConn.webRTCFunctions[fnName];
+      callstatsConn.reportError(pc, sessionId, webRtcFunc);
+    }
+  }
+
   function wrapError(pc, fnName, failure) {
     return (err) => {
-      if(callstatsConn !== null) {
-        let webRtcFunc = callstatsConn.webRTCFunctions[fnName];
-        callstatsConn.reportError(pc, sessionId, webRtcFunc);
-      }
+      reportError(pc, fnName);
       return failure(err);
     };
   }
@@ -30,6 +34,10 @@ let CallstatsOpenTok = (function() {
       copy.set(k, v);
     });
     return copy;
+  }
+
+  function noop() {
+    
   }
 
   function initialize(params) {
@@ -70,8 +78,8 @@ let CallstatsOpenTok = (function() {
   let origPeerConnection = window.RTCPeerConnection || window.webkitRTCPeerConnection || window.mozRTCPeerConnection;
   if (origPeerConnection) {
     let newPeerConnection = function(config, constraints) {
-      let pc = new origPeerConnection(config, constraints);
-      let uuid = idGenerator();
+	    const pc = new origPeerConnection(config, constraints);
+      const uuid = idGenerator();
       let kind;
       if(config === undefined) {
         kind = 'unknown';
@@ -84,7 +92,7 @@ let CallstatsOpenTok = (function() {
       });
       
       if(callstatsConn !== null) {
-        let usage = callstatsConn.fabricUsage.multiplex;
+        const usage = callstatsConn.fabricUsage.multiplex;
         callstatsConn.addNewFabric(pc, uuid, usage, sessionId, (err, msg) => {
           console.log("Monitoring status: " + err + " msg: " + msg);
         });
@@ -92,9 +100,9 @@ let CallstatsOpenTok = (function() {
         console.warn('Callstats not connected');
       }
 
-      let origGetStats = pc.getStats.bind(pc);
+      const origGetStats = pc.getStats.bind(pc);
       pc.getStats = function(success, failure) {
-        let successWrap = function(res) {
+        const successWrap = function(res) {
           onConnection && onConnection(uuid, pc);
           if (success) {
             return success(res);
@@ -103,32 +111,48 @@ let CallstatsOpenTok = (function() {
         return origGetStats(successWrap, failure);
       };
 
-      let origCreateOffer = pc.createOffer.bind(pc);
-      pc.createOffer = function(success, failure, constraints) {
-        let failureWrap = wrapError(pc, 'createOffer', failure);
-        return origCreateOffer(success, failureWrap, constraints);
+      const origCreateOffer = pc.createOffer.bind(pc);
+      pc.createOffer = function(...args) {
+        if(args.length <= 1) {
+          return origCreateOffer(...args).catch(ex => {
+            reportError(pc, 'createOffer');
+            throw ex;
+          });
+        } else {
+          const [success, failure, constraints] = args;
+          const failureWrap = wrapError(pc, 'createOffer', failure);
+          return origCreateOffer(success, failure, constraints);
+        }
+      };
+      
+      const origCreateAnswer = pc.createAnswer.bind(pc);
+      pc.createAnswer = function(...args) {
+        if (args.length <= 1) {
+          return origCreateAnswer(...args).catch(ex => {
+            reportError(pc, 'createAnswer');
+            throw ex;
+          });
+        } else {
+          const [success, failure, constraints] = args;
+          const failureWrap = wrapError(pc, 'createAnswer', failure);
+          return origCreateAnswer(success, failure, constraints);
+        }
       };
 
-      let origCreateAnswer = pc.createAnswer.bind(pc);
-      pc.createAnswer = function(success, failure, constraints) {
-        let failureWrap = wrapError(pc, 'createAnswer', failure);
-        return origCreateAnswer(success, failureWrap, constraints);
-      };
-
-      let origSetLocalDescription = pc.setLocalDescription.bind(pc);
-      pc.setLocalDescription = function(sdp, success, failure) {
-        let failureWrap = wrapError(pc, 'setLocalDescription', failure);
+      const origSetLocalDescription = pc.setLocalDescription.bind(pc);
+      pc.setLocalDescription = function(sdp, success = noop, failure = noop) {
+        const failureWrap = wrapError(pc, 'setLocalDescription', failure);
         return origSetLocalDescription(sdp, success, failureWrap);
       };
-
-      let origSetRemoteDescription = pc.setRemoteDescription.bind(pc);
-      pc.setRemoteDescription = function(sdp, success, failure) {
-        let failureWrap = wrapError(pc, 'setRemoteDescription', failure);
-        return origSetRemoteDescription(sdp, success, failureWrap);
+      
+      const origSetRemoteDescription = pc.setRemoteDescription.bind(pc);
+      pc.setRemoteDescription = function (sdp, success = noop, failure = noop) {
+        const failureWrap = wrapError(pc, 'setRemoteDescription', failure);
+        return origSetRemoteDescription(sdp, success, failure);
       };
 
-      let origAddIceCandidate = pc.addIceCandidate.bind(pc);
-      pc.addIceCandidate = function(candidate, success, failure) {
+      const origAddIceCandidate = pc.addIceCandidate.bind(pc);
+      pc.addIceCandidate = function(candidate, success = noop, failure = noop) {
         let failureWrap = wrapError(pc, 'addIceCandidate', failure);
         return origAddIceCandidate(candidate, success, failureWrap);
       };
