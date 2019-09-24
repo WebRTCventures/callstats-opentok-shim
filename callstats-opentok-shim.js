@@ -37,7 +37,7 @@ let CallstatsOpenTok = (function() {
   }
 
   function noop() {
-    
+
   }
 
   function initialize(params) {
@@ -117,14 +117,23 @@ let CallstatsOpenTok = (function() {
       }
 
       const origGetStats = pc.getStats.bind(pc);
-      pc.getStats = function(success, failure) {
-        const successWrap = function(res) {
+      pc.getStats = function(...args) {
+        if(args.length <= 1) {
           onConnection && onConnection(uuid, pc);
-          if (success) {
-            return success(res);
+          return origGetStats(...args).catch(ex => {
+            reportError(pc, 'getStats');
+            throw ex;
+          });
+        } else{
+          const [success, failure] = args;
+          const successWrap = function(res) {
+            onConnection && onConnection(uuid, pc);
+            if (success) {
+              return success(res);
+            };
           };
-        };
-        return origGetStats(successWrap, failure);
+          return origGetStats(successWrap, failure);
+        }
       };
 
       const origCreateOffer = pc.createOffer.bind(pc);
@@ -135,12 +144,12 @@ let CallstatsOpenTok = (function() {
             throw ex;
           });
         } else {
-          const [success, failure, constraints] = args;
+          const [constraints, success, failure] = args;
           const failureWrap = wrapError(pc, 'createOffer', failure);
-          return origCreateOffer(success, failure, constraints);
+          return origCreateOffer(constraints, success, failure, failureWrap);
         }
       };
-      
+
       const origCreateAnswer = pc.createAnswer.bind(pc);
       pc.createAnswer = function(...args) {
         if (args.length <= 1) {
@@ -149,28 +158,52 @@ let CallstatsOpenTok = (function() {
             throw ex;
           });
         } else {
-          const [success, failure, constraints] = args;
+          const [constraints, success, failure] = args;
           const failureWrap = wrapError(pc, 'createAnswer', failure);
-          return origCreateAnswer(success, failure, constraints);
+          return origCreateAnswer(constraints, success, failureWrap);
         }
       };
 
       const origSetLocalDescription = pc.setLocalDescription.bind(pc);
-      pc.setLocalDescription = function(sdp, success = noop, failure = noop) {
-        const failureWrap = wrapError(pc, 'setLocalDescription', failure);
-        return origSetLocalDescription(sdp, success, failureWrap);
+      pc.setLocalDescription = function(...args) {
+        if (args.length <= 1) {
+          return origSetLocalDescription(...args).catch(ex => {
+            reportError(pc, 'setLocalDescription');
+            throw ex;
+          });
+        } else {
+          const [sdp, success, failure] = args;
+          const failureWrap = wrapError(pc, 'setLocalDescription', failure);
+          return origSetLocalDescription(sdp, success, failureWrap);
+        }
       };
-      
+
       const origSetRemoteDescription = pc.setRemoteDescription.bind(pc);
-      pc.setRemoteDescription = function (sdp, success = noop, failure = noop) {
-        const failureWrap = wrapError(pc, 'setRemoteDescription', failure);
-        return origSetRemoteDescription(sdp, success, failure);
+      pc.setRemoteDescription = function (...args) {
+        if (args.length <= 1) {
+          return origSetRemoteDescription(...args).catch(ex => {
+            reportError(pc, 'setRemoteDescription');
+            throw ex;
+          });
+        } else {
+          const [sdp, success, failure] = args;
+          const failureWrap = wrapError(pc, 'setRemoteDescription', failure);
+          return origSetRemoteDescription(sdp, success, failureWrap);
+        }
       };
 
       const origAddIceCandidate = pc.addIceCandidate.bind(pc);
-      pc.addIceCandidate = function(candidate, success = noop, failure = noop) {
-        let failureWrap = wrapError(pc, 'addIceCandidate', failure);
-        return origAddIceCandidate(candidate, success, failureWrap);
+      pc.addIceCandidate = function(...args) {
+        if (args.length <= 1) {
+          return origAddIceCandidate(...args).catch(ex => {
+            reportError(pc, 'addIceCandidate');
+            throw ex;
+          });
+        } else {
+          const [candidate, success, failure] = args;
+          const failureWrap = wrapError(pc, 'addIceCandidate', failure);
+          return origAddIceCandidate(candidate, success, failureWrap);
+        }
       };
 
       pc.onsignalingstatechange = function(event) {
