@@ -1,6 +1,6 @@
 {
   "name": "callstats-opentok-shim",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "CallStats support for OpenTok",
   "main": "index.js",
   "scripts": {
