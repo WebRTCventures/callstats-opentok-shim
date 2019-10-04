@@ -51,4 +51,4 @@ This will generate new files in the `dist` directory.
 
 ### Credits
 
-This code was originally developed by [WebRTC.ventures](https://webrtc.ventures/) in partnership with callstats.io.
+This code was originally developed by [WebRTC.ventures](https://webrtc.ventures/) in partnership with [callstats.io](https://www.callstats.io/).
