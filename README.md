@@ -1,4 +1,4 @@
-## Callstat OpenTok Shim
+## Callstats OpenTok Shim
 
 Track stats of your OpenTok/TokBox sessions using Callstats.
 
@@ -48,3 +48,7 @@ Building is not required to use the shim, since there's a production ready versi
 
 After installing dependencies with `npm install`, run `grunt` in the project directory.
 This will generate new files in the `dist` directory.
+
+### Credits
+
+This code was originally developed by [WebRTC.ventures](https://webrtc.ventures/) in partnership with [callstats.io](https://www.callstats.io/).
