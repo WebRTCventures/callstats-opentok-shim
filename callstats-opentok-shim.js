@@ -5,6 +5,30 @@ let CallstatsOpenTok = (function() {
   let sessionId     = null;
   let onConnection  = null;
 
+  function isPCTPc(pcConfig) {
+    if (!pcConfig.iceServers) {
+      return false;
+    }
+    const len = pcConfig.iceServers.length;
+    for (let i = 0; i < len; i++) {
+      const username = pcConfig.iceServers[i].username;
+      if (username && username.includes('pct')) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // note : currently we are assuming for bandwidth estimation/connectivity check/or what other reason
+  // tokbox is creating shortliving peerconnection does not have pc constraints
+  // todo : make educative guess
+  function isShortCall(constraints) {
+    if (!constraints) {
+      return true;
+    }
+    return false;
+  }
+
   function generateUUID() {
     let d = new Date().getTime();
     let uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -95,9 +119,13 @@ let CallstatsOpenTok = (function() {
   if (origPeerConnection) {
     let newPeerConnection = function(config, constraints) {
 	    const pc = new origPeerConnection(config, constraints);
+	    // if it is PCT pc then ignore
+      if (isPCTPc(config) || isShortCall(constraints)) {
+        return pc;
+      }
       const uuid = idGenerator();
       let kind;
-      if(config === undefined) {
+      if (config === undefined) {
         kind = 'unknown';
       } else {
         kind = config.capableSimulcastStreams ? 'publisher' : 'subscriber'
