@@ -1,6 +1,7 @@
 module.exports = function(grunt) {
 
   grunt.initConfig({
+    pkg: grunt.file.readJSON('package.json'),
     babel: {
       options: {
         sourceMap: true,
@@ -17,7 +18,11 @@ module.exports = function(grunt) {
     },
     uglify: {
       options : {
-        sourceMap : true
+        banner: '/*! <%= pkg.name %>  version = <%= pkg.version %> <%= grunt.template.today("yyyy-mm-dd hh-MM-ss") %> */\n',
+        sourceMap : true,
+        mangle: true, // prevents changes to your variable and function names
+        drop_console: true, // elimates all the calls to console.* methods
+        beautify: false, // beautify your code for debugging purposes
       },
       all_src : {
         src : 'dist/*-es5.js',
