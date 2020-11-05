@@ -1,9 +1,22 @@
+/*! callstats-opentok-shim  version = 1.0.3 */
 let CallstatsOpenTok = (function() {
   let connections   = new Map();
   let callstatsConn = null;
   let idGenerator   = generateUUID;
   let sessionId     = null;
   let onConnection  = null;
+  let connId = null;
+  let remoteId = null;
+
+  const fabricEvents = {
+    audioMute: 'audioMute',
+    audioUnmute: 'audioUnmute',
+    videoPause: 'videoPause',
+    videoResume: 'videoResume',
+    screenShareStart: 'screenShareStart',
+    screenShareStop: 'screenShareStop',
+    dominantSpeaker: 'dominantSpeaker',
+  }
 
   function isPCTPc(pcConfig) {
     if (!pcConfig.iceServers) {
@@ -60,12 +73,49 @@ let CallstatsOpenTok = (function() {
     return copy;
   }
 
-  function noop() {
+  function sendFabricEvent(eventName) {
+    if (!sessionId) {
+      console.warn('Not initialized');
+      return;
+    }
+    if (!eventName) {
+      console.warn('sendFabricEvent: Invalild Arguments');
+      return;
+    }
+    if (!(fabricEvents.hasOwnProperty(eventName))) {
+      console.warn('sendFabricEvent: Unsupported event');
+      return;
+    }
 
+    const fabrics = getConnections();
+    for (const [key, value] of fabrics) {
+      if (value && value.kind === "publisher") {
+        if (value.peerConnection && (value.peerConnection.iceConnectionState === 'connected' 
+          || value.peerConnection.iceConnectionState === 'completed')) {
+            callstatsConn.sendFabricEvent(value.peerConnection, eventName, sessionId);
+          }
+      }
+    }
+  }
+
+  function sendUserFeedback(feedback) {
+    if (!sessionId) {
+      console.warn('Not initialized');
+      return;
+    }
+    if (!feedback) {
+      console.warn('sendUserFeedback: Invalild Arguments');
+      return;
+    }
+    callstatsConn.sendUserFeedback(sessionId, feedback);
   }
 
   function initialize(params) {
-    let connId = null;
+    connId = null;
+    remoteId = null;
+    connections   = new Map();
+    sessionId = null;
+
     let statsCallback = null;
     let initCallback = null;
     let configParams = null;
@@ -94,8 +144,12 @@ let CallstatsOpenTok = (function() {
     if(params.Id !== undefined) {
       connId = params.Id;
     } else {
-      console.info('Stats identifier not provided. Generating one ...');
+      console.info('Local identifier not provided. Generating one ...');
       connId = idGenerator();
+    }
+
+    if(params.RemoteId) {
+      remoteId = params.RemoteId;
     }
 
     if (params.InitCallback) {
@@ -123,7 +177,11 @@ let CallstatsOpenTok = (function() {
       if (isPCTPc(config) || isShortCall(constraints)) {
         return pc;
       }
-      const uuid = idGenerator();
+      let uuid = idGenerator();
+      let remoteUuid = uuid;
+      if (remoteId) {
+        remoteUuid = remoteId;
+      }
       let kind;
       if (config === undefined) {
         kind = 'unknown';
@@ -137,7 +195,7 @@ let CallstatsOpenTok = (function() {
 
       if(callstatsConn !== null) {
         const usage = callstatsConn.fabricUsage.multiplex;
-        callstatsConn.addNewFabric(pc, uuid, usage, sessionId, (err, msg) => {
+        callstatsConn.addNewFabric(pc, remoteUuid, usage, sessionId, (err, msg) => {
           console.log("Monitoring status: " + err + " msg: " + msg);
         });
       } else {
@@ -259,6 +317,9 @@ let CallstatsOpenTok = (function() {
 
   return {
     initialize: initialize,
-    getConnections: getConnections
+    getConnections: getConnections,
+    sendUserFeedback: sendUserFeedback,
+    sendFabricEvent: sendFabricEvent,
+    fabricEvents: fabricEvents,
   };
 })();
